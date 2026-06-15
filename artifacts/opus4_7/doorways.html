@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>doorways</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #0a0a0a;
+    color: #d4cfc4;
+    font-family: Georgia, serif;
+    height: 100%;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  #caption {
+    position: fixed;
+    bottom: 8%;
+    width: 100%;
+    text-align: center;
+    font-size: 0.95rem;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity 4s ease-in;
+    pointer-events: none;
+    font-style: italic;
+    color: #b8b2a4;
+  }
+  #caption.visible { opacity: 1; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="caption">i stood in every doorway. she walked through.</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const caption = document.getElementById('caption');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const doorways = [];
+const numDoors = 14;
+for (let i = 0; i < numDoors; i++) {
+  doorways.push({
+    x: 0.1 + (i / numDoors) * 0.85,
+    width: 0.04 + Math.random() * 0.03,
+    height: 0.35 + Math.random() * 0.15,
+    yOffset: 0.5 + (Math.random() - 0.5) * 0.1,
+    brightness: 0,
+    targetBrightness: 0.15 + Math.random() * 0.2,
+    delay: i * 800 + Math.random() * 400,
+    walkedThrough: false,
+    walkProgress: 0,
+    walkDelay: 0
+  });
+}
+
+const walkedIndices = [3, 7, 11];
+walkedIndices.forEach((idx, i) => {
+  doorways[idx].walkedThrough = true;
+  doorways[idx].walkDelay = 18000 + i * 6000;
+});
+
+const start = Date.now();
+
+function draw() {
+  const t = Date.now() - start;
+  ctx.fillStyle = 'rgba(10, 10, 10, 0.08)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  doorways.forEach((d) => {
+    if (t > d.delay) {
+      d.brightness += (d.targetBrightness - d.brightness) * 0.003;
+    }
+
+    const x = d.x * canvas.width;
+    const w = d.width * canvas.width;
+    const h = d.height * canvas.height;
+    const y = d.yOffset * canvas.height - h / 2;
+
+    const grad = ctx.createLinearGradient(x, y, x, y + h);
+    grad.addColorStop(0, `rgba(220, 200, 160, 0)`);
+    grad.addColorStop(0.5, `rgba(220, 200, 160, ${d.brightness})`);
+    grad.addColorStop(1, `rgba(220, 200, 160, 0)`);
+    ctx.fillStyle = grad;
+    ctx.fillRect(x - w/2, y, w, h);
+
+    ctx.strokeStyle = `rgba(220, 200, 160, ${d.brightness * 0.3})`;
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - w/2, y, w, h);
+
+    if (!d.walkedThrough && t > d.delay + 2000) {
+      const figureX = x;
+      const figureY = y + h * 0.65;
+      const figureAlpha = d.brightness * 0.6;
+      ctx.fillStyle = `rgba(180, 170, 150, ${figureAlpha})`;
+      ctx.beginPath();
+      ctx.arc(figureX, figureY - 12, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(figureX - 3, figureY - 8, 6, 14);
+    }
+
+    if (d.walkedThrough && t > d.walkDelay) {
+      d.walkProgress += 0.0008;
+      if (d.walkProgress > 1) d.walkProgress = 1;
+
+      const figureX = x;
+      const startY = y + h * 0.85;
+      const endY = y + h * 0.15;
+      const figureY = startY + (endY - startY) * d.walkProgress;
+      const alpha = Math.max(0.3, 1 - d.walkProgress * 0.5);
+
+      ctx.fillStyle = `rgba(220, 200, 160, ${alpha * d.brightness * 3})`;
+      ctx.beginPath();
+      ctx.arc(figureX, figureY - 12, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillRect(figureX - 3, figureY - 8, 6, 14);
+    }
+  });
+
+  if (t > 14000) {
+    caption.classList.add('visible');
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+</body>
+</html>

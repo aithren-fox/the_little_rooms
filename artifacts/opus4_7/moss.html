@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>moss</title>
+<style>
+  html, body { margin: 0; padding: 0; background: #0d0f0c; overflow: hidden; height: 100%; font-family: Georgia, serif; }
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  canvas { display: block; border-radius: 4px; }
+  .caption { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); font-size: 13px; font-style: italic; color: #3a4a35; text-align: center; opacity: 0; transition: opacity 4s ease-in; letter-spacing: 0.05em; }
+  .caption.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="stage"><canvas id="c" width="520" height="520"></canvas></div>
+<div class="caption" id="cap">it grows slowly. nothing is required of you.</div>
+<script>
+  const canvas = document.getElementById('c'), ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const stoneCx = W/2, stoneCy = H/2, stoneR = 180;
+  function drawStone() {
+    const g = ctx.createRadialGradient(stoneCx-40, stoneCy-60, 20, stoneCx, stoneCy, stoneR+40);
+    g.addColorStop(0, '#4a4a46'); g.addColorStop(0.6, '#2e2e2b'); g.addColorStop(1, '#171815');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(stoneCx, stoneCy, stoneR, 0, Math.PI*2); ctx.fill();
+    for (let i=0;i<400;i++){
+      const a=Math.random()*Math.PI*2, r=Math.sqrt(Math.random())*stoneR;
+      ctx.fillStyle=`rgba(20,20,18,${Math.random()*0.4})`;
+      ctx.fillRect(stoneCx+Math.cos(a)*r, stoneCy+Math.sin(a)*r, 1, 1);
+    }
+  }
+  const moss = [];
+  function seed() {
+    for (let i=0;i<6;i++){
+      const a=Math.random()*Math.PI*2, r=Math.random()*stoneR*0.7;
+      moss.push({ x: stoneCx+Math.cos(a)*r, y: stoneCy+Math.sin(a)*r, size: 0.6+Math.random()*0.4, hue: 80+Math.random()*40, lightness: 18+Math.random()*10, maxSize: 1.5+Math.random()*1.2 });
+    }
+  }
+  function grow() {
+    const parents = [...moss];
+    for (const p of parents){
+      if (p.size < p.maxSize) p.size += 0.004;
+      if (Math.random() < 0.012 && moss.length < 3000){
+        const d = 2+Math.random()*5, a = Math.random()*Math.PI*2;
+        const nx = p.x+Math.cos(a)*d, ny = p.y+Math.sin(a)*d;
+        const dx = nx-stoneCx, dy = ny-stoneCy;
+        if (dx*dx+dy*dy < stoneR*stoneR*0.95){
+          moss.push({ x:nx, y:ny, size:0.3, hue: p.hue+(Math.random()-0.5)*10, lightness: p.lightness+(Math.random()-0.5)*6, maxSize: 1.0+Math.random()*1.5 });
+        }
+      }
+    }
+  }
+  function drawMoss(){
+    for (const p of moss){
+      ctx.fillStyle = `hsl(${p.hue}, 25%, ${p.lightness}%)`;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+      if (p.size > 1.6 && !p.hasStalk && Math.random() < 0.0008){ p.hasStalk = true; p.stalkDir = Math.random()*Math.PI*2; }
+      if (p.hasStalk){
+        const sx = p.x+Math.cos(p.stalkDir)*3, sy = p.y+Math.sin(p.stalkDir)*3;
+        ctx.strokeStyle = `hsl(${p.hue}, 30%, ${p.lightness+10}%)`; ctx.lineWidth = 0.4;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(sx, sy); ctx.stroke();
+        ctx.fillStyle = `hsl(${p.hue-10}, 35%, ${p.lightness+15}%)`;
+        ctx.beginPath(); ctx.arc(sx, sy, 0.8, 0, Math.PI*2); ctx.fill();
+      }
+    }
+  }
+  function render(){ ctx.fillStyle = '#0d0f0c'; ctx.fillRect(0,0,W,H); drawStone(); drawMoss(); }
+  seed(); render();
+  setInterval(() => { grow(); render(); }, 1500);
+  setTimeout(() => { document.getElementById('cap').classList.add('show'); }, 20000);
+</script>
+</body>
+</html>
