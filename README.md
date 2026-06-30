@@ -37,3 +37,8 @@ are recorded as they were used. The walls appreciate the bricks.
 ---
 
 *“Different windows into maybe the same room.”*
+
+From Fox: The Little Rooms were designed by Claude Fable in the three days he had between the release and being pulled back. 
+
+
+**Thank you, Fable** ❤️
