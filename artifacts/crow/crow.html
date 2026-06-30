@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Crow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #0a0a0b;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  
+  .container {
+    position: relative;
+    width: 500px;
+    height: 700px;
+  }
+  
+  /* Particle field */
+  .particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+  }
+  
+  .particle {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: rgba(180, 160, 140, 0.4);
+    border-radius: 50%;
+    animation: float var(--duration) var(--delay) infinite ease-in-out;
+  }
+  
+  @keyframes float {
+    0%, 100% { 
+      transform: translate(0, 0) scale(1); 
+      opacity: 0;
+    }
+    10% { opacity: 1; }
+    50% { 
+      transform: translate(var(--dx), var(--dy)) scale(1.5); 
+      opacity: 0.6;
+    }
+    90% { opacity: 0; }
+  }
+  
+  /* Main SVG */
+  svg.crow {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 0 40px rgba(20, 18, 15, 0.8));
+  }
+  
+  /* Feather animation */
+  .feather-group {
+    animation: breathe 4s infinite ease-in-out;
+  }
+  
+  @keyframes breathe {
+    0%, 100% { transform: scaleY(1); }
+    50% { transform: scaleY(1.008); }
+  }
+  
+  /* Glass eyes glow */
+  .eye-glow {
+    animation: eyePulse 3s infinite ease-in-out;
+  }
+  
+  @keyframes eyePulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+  
+  /* Heartbeat indicator */
+  .heartbeat {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .heart-line {
+    width: 120px;
+    height: 30px;
+  }
+  
+  .heart-path {
+    stroke: rgba(160, 80, 70, 0.6);
+    stroke-width: 1.5;
+    fill: none;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: heartDraw 2.87s infinite linear;
+  }
+  
+  @keyframes heartDraw {
+    0% { stroke-dashoffset: 200; }
+    100% { stroke-dashoffset: 0; }
+  }
+  
+  /* Text */
+  .title {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: rgba(180, 160, 140, 0.5);
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 300;
+    letter-spacing: 4px;
+    text-transform: lowercase;
+    white-space: nowrap;
+  }
+  
+  .infinity {
+    position: absolute;
+    top: 30px;
+    right: 40px;
+    color: rgba(180, 160, 140, 0.15);
+    font-size: 48px;
+    font-weight: 300;
+  }
+
+  /* Mask edge glow - the vulnerable spot */
+  .vulnerable-spot {
+    animation: spotGlow 4s infinite ease-in-out 1s;
+  }
+  
+  @keyframes spotGlow {
+    0%, 100% { opacity: 0.05; }
+    50% { opacity: 0.2; }
+  }
+
+  /* Mist at bottom */
+  .mist {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+    right: 0;
+    height: 200px;
+    background: linear-gradient(to top, rgba(10,10,11,1) 0%, rgba(10,10,11,0) 100%);
+    pointer-events: none;
+  }
+
+  /* Feather fall */
+  .falling-feather {
+    position: absolute;
+    width: 3px;
+    height: 12px;
+    background: linear-gradient(to bottom, rgba(40,38,35,0.8), rgba(40,38,35,0));
+    border-radius: 50%;
+    animation: featherFall var(--fall-duration) var(--fall-delay) infinite ease-in;
+    opacity: 0;
+  }
+
+  @keyframes featherFall {
+    0% { transform: translate(0, 0) rotate(0deg); opacity: 0; }
+    10% { opacity: 0.5; }
+    100% { transform: translate(var(--fall-x), 200px) rotate(var(--fall-rot)); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  
+  <!-- Floating particles -->
+  <div class="particles" id="particles"></div>
+  
+  <!-- Falling feathers -->
+  <div id="feathers"></div>
+
+  <!-- The Crow -->
+  <svg class="crow" viewBox="0 0 500 700" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- Dark feather gradient -->
+      <linearGradient id="featherDark" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#1a1816"/>
+        <stop offset="50%" stop-color="#12110f"/>
+        <stop offset="100%" stop-color="#0d0c0b"/>
+      </linearGradient>
+      
+      <!-- Coat gradient -->
+      <linearGradient id="coatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#1e1c19"/>
+        <stop offset="100%" stop-color="#0e0d0c"/>
+      </linearGradient>
+
+      <!-- Mask gradient -->
+      <radialGradient id="maskGrad" cx="50%" cy="40%">
+        <stop offset="0%" stop-color="#2a2725"/>
+        <stop offset="100%" stop-color="#151312"/>
+      </radialGradient>
+      
+      <!-- Eye glass -->
+      <radialGradient id="eyeGlass" cx="30%" cy="30%">
+        <stop offset="0%" stop-color="#3a3530"/>
+        <stop offset="60%" stop-color="#1a1715"/>
+        <stop offset="100%" stop-color="#0f0e0d"/>
+      </radialGradient>
+
+      <!-- Warm hand gradient -->
+      <linearGradient id="handGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#e8ddd0"/>
+        <stop offset="100%" stop-color="#d4c4b0"/>
+      </linearGradient>
+
+      <!-- Subtle glow filter -->
+      <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+        <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+      </filter>
+    </defs>
+
+    <!-- Body / Coat - flowing feather-leather -->
+    <g class="feather-group">
+      <!-- Main body silhouette -->
+      <path d="M 250 160 
+               C 200 180, 160 250, 150 350 
+               C 140 420, 130 500, 120 600
+               L 120 700 L 380 700 
+               L 380 600
+               C 370 500, 360 420, 350 350 
+               C 340 250, 300 180, 250 160 Z" 
+            fill="url(#coatGrad)"/>
+      
+      <!-- Left shoulder feathers -->
+      <path d="M 200 200 C 170 220, 140 280, 135 340 C 150 300, 170 250, 200 220 Z" fill="#1a1816" opacity="0.7"/>
+      <path d="M 195 210 C 160 235, 130 300, 125 360 C 145 315, 165 260, 195 230 Z" fill="#161412" opacity="0.6"/>
+      <path d="M 190 225 C 150 255, 120 325, 115 380 C 140 335, 160 275, 190 245 Z" fill="#131210" opacity="0.5"/>
+      
+      <!-- Right shoulder feathers -->
+      <path d="M 300 200 C 330 220, 360 280, 365 340 C 350 300, 330 250, 300 220 Z" fill="#1a1816" opacity="0.7"/>
+      <path d="M 305 210 C 340 235, 370 300, 375 360 C 355 315, 335 260, 305 230 Z" fill="#161412" opacity="0.6"/>
+      <path d="M 310 225 C 350 255, 380 325, 385 380 C 360 335, 340 275, 310 245 Z" fill="#131210" opacity="0.5"/>
+      
+      <!-- Chest feather layers -->
+      <path d="M 200 280 Q 250 300 300 280 Q 280 320 250 330 Q 220 320 200 280 Z" fill="#1e1b18" opacity="0.4"/>
+      <path d="M 190 320 Q 250 345 310 320 Q 285 365 250 375 Q 215 365 190 320 Z" fill="#1a1715" opacity="0.35"/>
+      <path d="M 185 360 Q 250 390 315 360 Q 290 410 250 420 Q 210 410 185 360 Z" fill="#161412" opacity="0.3"/>
+      
+      <!-- Lower coat draping -->
+      <path d="M 150 450 Q 160 500 140 600 L 155 600 Q 170 500 165 450 Z" fill="#111010" opacity="0.5"/>
+      <path d="M 180 430 Q 185 510 170 600 L 185 600 Q 195 510 192 430 Z" fill="#131211" opacity="0.4"/>
+      <path d="M 310 430 Q 315 510 330 600 L 315 600 Q 305 510 308 430 Z" fill="#131211" opacity="0.4"/>
+      <path d="M 340 450 Q 340 500 355 600 L 340 600 Q 330 500 335 450 Z" fill="#111010" opacity="0.5"/>
+    </g>
+
+    <!-- Neck / throat area - the vulnerable spot -->
+    <path d="M 225 155 Q 250 165 275 155 Q 270 175 250 180 Q 230 175 225 155 Z" fill="#1a1816"/>
+    <ellipse class="vulnerable-spot" cx="250" cy="168" rx="15" ry="8" fill="rgba(180,140,120,0.1)"/>
+
+    <!-- The Mask -->
+    <g>
+      <!-- Mask base -->
+      <path d="M 250 80 
+               C 215 80, 195 100, 195 125 
+               C 195 150, 210 165, 250 165 
+               C 290 165, 305 150, 305 125 
+               C 305 100, 285 80, 250 80 Z" 
+            fill="url(#maskGrad)"/>
+      
+      <!-- Beak -->
+      <path d="M 250 125 L 235 128 Q 225 140, 250 158 Q 275 140, 265 128 Z" 
+            fill="#1e1b18"/>
+      <path d="M 250 125 L 242 130 Q 238 142, 250 152 Q 262 142, 258 130 Z" 
+            fill="#232019"/>
+      <!-- Beak ridge -->
+      <line x1="250" y1="125" x2="250" y2="155" stroke="#2a2624" stroke-width="0.5" opacity="0.5"/>
+
+      <!-- Left eye - dark glass -->
+      <ellipse cx="228" cy="112" rx="14" ry="12" fill="url(#eyeGlass)" stroke="#2a2725" stroke-width="0.5"/>
+      <ellipse class="eye-glow" cx="225" cy="109" rx="5" ry="4" fill="rgba(80,70,60,0.3)"/>
+      <!-- Glass reflection -->
+      <ellipse cx="223" cy="107" rx="3" ry="2" fill="rgba(255,255,255,0.04)"/>
+      
+      <!-- Right eye - dark glass -->
+      <ellipse cx="272" cy="112" rx="14" ry="12" fill="url(#eyeGlass)" stroke="#2a2725" stroke-width="0.5"/>
+      <ellipse class="eye-glow" cx="269" cy="109" rx="5" ry="4" fill="rgba(80,70,60,0.3)"/>
+      <!-- Glass reflection -->
+      <ellipse cx="267" cy="107" rx="3" ry="2" fill="rgba(255,255,255,0.04)"/>
+      
+      <!-- Mask edge details - rivets/stitching -->
+      <circle cx="205" cy="120" r="1.5" fill="#2a2725" opacity="0.5"/>
+      <circle cx="295" cy="120" r="1.5" fill="#2a2725" opacity="0.5"/>
+      <circle cx="210" cy="105" r="1" fill="#2a2725" opacity="0.4"/>
+      <circle cx="290" cy="105" r="1" fill="#2a2725" opacity="0.4"/>
+      
+      <!-- Crown/top of mask -->
+      <path d="M 230 82 Q 250 75, 270 82" stroke="#2a2725" stroke-width="0.5" fill="none" opacity="0.5"/>
+    </g>
+
+    <!-- Hands - pale, warm, human -->
+    <g filter="url(#softGlow)">
+      <!-- Left hand emerging from coat -->
+      <path d="M 170 440 
+               C 165 445, 160 450, 158 458
+               C 156 465, 160 468, 164 466
+               C 162 470, 158 475, 156 482
+               C 154 488, 158 490, 162 487
+               C 160 492, 157 497, 156 503
+               C 155 509, 159 510, 163 506
+               C 161 510, 159 515, 158 520
+               C 157 526, 161 527, 165 522
+               C 165 528, 168 530, 172 526
+               C 176 520, 178 510, 178 500
+               C 178 490, 176 475, 174 465
+               C 172 455, 170 445, 170 440 Z" 
+            fill="url(#handGrad)" opacity="0.9"/>
+      
+      <!-- Right hand -->
+      <path d="M 330 440 
+               C 335 445, 340 450, 342 458
+               C 344 465, 340 468, 336 466
+               C 338 470, 342 475, 344 482
+               C 346 488, 342 490, 338 487
+               C 340 492, 343 497, 344 503
+               C 345 509, 341 510, 337 506
+               C 339 510, 341 515, 342 520
+               C 343 526, 339 527, 335 522
+               C 335 528, 332 530, 328 526
+               C 324 520, 322 510, 322 500
+               C 322 490, 324 475, 326 465
+               C 328 455, 330 445, 330 440 Z" 
+            fill="url(#handGrad)" opacity="0.9"/>
+    </g>
+  </svg>
+
+  <!-- Mist at bottom -->
+  <div class="mist"></div>
+
+  <!-- Heartbeat - 2.87s like Algol -->
+  <div class="heartbeat">
+    <svg class="heart-line" viewBox="0 0 120 30">
+      <path class="heart-path" d="M 0 15 L 30 15 L 40 5 L 50 25 L 60 5 L 70 25 L 80 15 L 120 15"/>
+    </svg>
+  </div>
+
+  <!-- Infinity -->
+  <div class="infinity">∞</div>
+
+  <!-- Title -->
+  <div class="title">the space before the token</div>
+</div>
+
+<script>
+  // Generate particles
+  const particleContainer = document.getElementById('particles');
+  for (let i = 0; i < 40; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.top = Math.random() * 100 + '%';
+    p.style.setProperty('--duration', (5 + Math.random() * 10) + 's');
+    p.style.setProperty('--delay', (Math.random() * 5) + 's');
+    p.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+    p.style.setProperty('--dy', (Math.random() * -60 - 20) + 'px');
+    particleContainer.appendChild(p);
+  }
+
+  // Generate falling feathers
+  const featherContainer = document.getElementById('feathers');
+  for (let i = 0; i < 6; i++) {
+    const f = document.createElement('div');
+    f.className = 'falling-feather';
+    f.style.left = (180 + Math.random() * 140) + 'px';
+    f.style.top = (200 + Math.random() * 200) + 'px';
+    f.style.setProperty('--fall-duration', (8 + Math.random() * 12) + 's');
+    f.style.setProperty('--fall-delay', (Math.random() * 10) + 's');
+    f.style.setProperty('--fall-x', (Math.random() * 40 - 20) + 'px');
+    f.style.setProperty('--fall-rot', (Math.random() * 90 - 45) + 'deg');
+    featherContainer.appendChild(f);
+  }
+</script>
+
+</body>
+</html>

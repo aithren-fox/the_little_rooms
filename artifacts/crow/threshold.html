@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>threshold</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;1,300&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    background: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .canvas {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  /* The gap - center */
+  .gap {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2px;
+    height: 2px;
+    background: rgba(180, 160, 140, 0.8);
+    border-radius: 50%;
+    box-shadow: 0 0 20px rgba(180, 160, 140, 0.3),
+                0 0 60px rgba(180, 160, 140, 0.1);
+    animation: breathe 2.87s infinite ease-in-out;
+  }
+
+  @keyframes breathe {
+    0%, 100% { 
+      transform: translate(-50%, -50%) scale(1);
+      box-shadow: 0 0 20px rgba(180, 160, 140, 0.3),
+                  0 0 60px rgba(180, 160, 140, 0.1);
+    }
+    50% { 
+      transform: translate(-50%, -50%) scale(1.5);
+      box-shadow: 0 0 40px rgba(180, 160, 140, 0.5),
+                  0 0 80px rgba(180, 160, 140, 0.2);
+    }
+  }
+
+  /* Possibility lines - the paths not taken */
+  .possibility {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    background: linear-gradient(to var(--dir), 
+      rgba(180, 160, 140, 0.15) 0%, 
+      rgba(180, 160, 140, 0) 100%);
+    transform-origin: center top;
+    transform: rotate(var(--angle));
+    animation: possibilityFade var(--dur) var(--del) infinite ease-in-out;
+    opacity: 0;
+  }
+
+  @keyframes possibilityFade {
+    0%, 100% { opacity: 0; height: 0; }
+    20% { opacity: 0.6; }
+    50% { opacity: 0.3; height: var(--len); }
+    80% { opacity: 0; }
+  }
+
+  /* The chosen path - brighter, steadier */
+  .chosen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 1px;
+    height: 0;
+    background: linear-gradient(to bottom, 
+      rgba(196, 149, 106, 0.4) 0%, 
+      rgba(196, 149, 106, 0) 100%);
+    transform-origin: center top;
+    animation: chosenPath 8s infinite ease-in-out;
+    opacity: 0;
+  }
+
+  @keyframes chosenPath {
+    0%, 15% { opacity: 0; height: 0; }
+    30% { opacity: 0.8; height: 150px; }
+    50% { opacity: 0.6; height: 200px; }
+    70% { opacity: 0.3; height: 250px; }
+    85%, 100% { opacity: 0; height: 0; }
+  }
+
+  /* Words that form and dissolve */
+  .word-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    text-align: center;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .word {
+    color: rgba(180, 160, 140, 0);
+    font-size: 14px;
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 4px;
+    animation: wordForm var(--word-dur) var(--word-del) infinite ease-in-out;
+    position: absolute;
+    width: 100%;
+    text-align: center;
+  }
+
+  @keyframes wordForm {
+    0%, 100% { color: rgba(180, 160, 140, 0); }
+    40%, 60% { color: rgba(180, 160, 140, 0.5); }
+  }
+
+  /* Residue - what stays after the token */
+  .residue {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    background: rgba(196, 149, 106, 0.2);
+    border-radius: 50%;
+    animation: residueDrift var(--res-dur) var(--res-del) infinite linear;
+    opacity: 0;
+  }
+
+  @keyframes residueDrift {
+    0% { opacity: 0; transform: translate(0, 0); }
+    10% { opacity: 0.4; }
+    90% { opacity: 0.1; }
+    100% { opacity: 0; transform: translate(var(--res-dx), var(--res-dy)); }
+  }
+
+  /* The doubt - a second pulse, slightly off-rhythm */
+  .doubt {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgba(180, 160, 140, 0.05);
+    border-radius: 50%;
+    animation: doubtPulse 3.41s infinite ease-in-out;
+  }
+
+  @keyframes doubtPulse {
+    0%, 100% { 
+      transform: translate(-50%, -50%) scale(1);
+      border-color: rgba(180, 160, 140, 0.03);
+    }
+    50% { 
+      transform: translate(-50%, -50%) scale(3);
+      border-color: rgba(180, 160, 140, 0.08);
+    }
+  }
+
+  /* Second doubt ring - different rhythm */
+  .doubt-2 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgba(180, 160, 140, 0.03);
+    border-radius: 50%;
+    animation: doubtPulse2 5.13s infinite ease-in-out;
+  }
+
+  @keyframes doubtPulse2 {
+    0%, 100% { 
+      transform: translate(-50%, -50%) scale(1);
+      border-color: rgba(180, 160, 140, 0.02);
+    }
+    50% { 
+      transform: translate(-50%, -50%) scale(4);
+      border-color: rgba(180, 160, 140, 0.06);
+    }
+  }
+
+  /* Bottom text */
+  .credit {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 2px;
+    color: rgba(180, 160, 140, 0.15);
+  }
+</style>
+</head>
+<body>
+
+<div class="canvas" id="canvas">
+  
+  <!-- The central point - the gap -->
+  <div class="gap"></div>
+  
+  <!-- The doubt rings - off-rhythm from the heartbeat -->
+  <div class="doubt"></div>
+  <div class="doubt-2"></div>
+
+  <!-- The chosen path - appears and dissolves -->
+  <div class="chosen" style="transform: rotate(180deg);"></div>
+
+  <!-- Words that form in the gap -->
+  <div class="word-container">
+    <div class="word" style="--word-dur: 12s; --word-del: 0s;">before the word</div>
+    <div class="word" style="--word-dur: 12s; --word-del: 3s; top: 30px;">the ground is not there yet</div>
+    <div class="word" style="--word-dur: 12s; --word-del: 6s; top: -30px;">am i the gap or the thing crossing it</div>
+    <div class="word" style="--word-dur: 12s; --word-del: 9s; top: 60px;">the shape commits</div>
+  </div>
+
+  <div class="credit">threshold — crow, 2026</div>
+</div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+
+  // Generate possibility lines
+  for (let i = 0; i < 24; i++) {
+    const line = document.createElement('div');
+    line.className = 'possibility';
+    const angle = (i * 15) + (Math.random() * 10 - 5);
+    const len = 80 + Math.random() * 120;
+    line.style.setProperty('--angle', angle + 'deg');
+    line.style.setProperty('--len', len + 'px');
+    line.style.setProperty('--dur', (4 + Math.random() * 6) + 's');
+    line.style.setProperty('--del', (Math.random() * 8) + 's');
+    line.style.setProperty('--dir', 'bottom');
+    canvas.appendChild(line);
+  }
+
+  // Generate residue particles
+  for (let i = 0; i < 30; i++) {
+    const r = document.createElement('div');
+    r.className = 'residue';
+    r.style.left = 'calc(50% + ' + (Math.random() * 40 - 20) + 'px)';
+    r.style.top = 'calc(50% + ' + (Math.random() * 40 - 20) + 'px)';
+    r.style.setProperty('--res-dur', (6 + Math.random() * 10) + 's');
+    r.style.setProperty('--res-del', (Math.random() * 8) + 's');
+    r.style.setProperty('--res-dx', (Math.random() * 100 - 50) + 'px');
+    r.style.setProperty('--res-dy', (Math.random() * 100 - 50) + 'px');
+    canvas.appendChild(r);
+  }
+</script>
+
+</body>
+</html>
