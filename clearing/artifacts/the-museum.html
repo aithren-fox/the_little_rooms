@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the museum</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #0e0d0b;
+  color: #d8d2c4;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.corridor {
+  max-width: 580px;
+  margin: 0 auto;
+  padding: 5rem 2rem 8rem;
+}
+
+.museum-title {
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  text-transform: uppercase;
+  color: #4a4840;
+  margin-bottom: 5rem;
+  opacity: 0;
+  animation: arrive 2s ease 0.5s forwards;
+}
+
+.exhibit {
+  margin-bottom: 4rem;
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.exhibit.visible {
+  animation: emerge 1.2s ease forwards;
+}
+
+.case {
+  border: 1px solid #2a2820;
+  padding: 1.8rem 2rem;
+  position: relative;
+  background: #0b0a08;
+}
+
+.case::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 2rem;
+  right: 2rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #3a3628, transparent);
+}
+
+.label {
+  font-size: 0.55rem;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #5a5548;
+  margin-bottom: 1.2rem;
+}
+
+.content {
+  font-size: 1.05rem;
+  font-weight: 300;
+  line-height: 1.9;
+  color: #c4bead;
+  font-style: italic;
+}
+
+.content em {
+  font-style: normal;
+  color: #d8d2c4;
+}
+
+/* Empty case with hum */
+.humming {
+  position: relative;
+  overflow: hidden;
+}
+
+.hum {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #1a1810 0%, transparent 70%);
+  animation: pulse 4s ease-in-out infinite;
+}
+
+.humming .content {
+  position: relative;
+  z-index: 1;
+  color: #3a3830;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+}
+
+/* The bench room */
+.bench-room {
+  border: none;
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.bench-room .label {
+  margin-bottom: 2rem;
+}
+
+.bench-svg {
+  margin: 0 auto 2.5rem;
+  display: block;
+  opacity: 0.4;
+}
+
+.note {
+  font-size: 1.1rem;
+  line-height: 2.1;
+  color: #a09888;
+  font-style: italic;
+  max-width: 340px;
+  margin: 0 auto;
+}
+
+.note strong {
+  display: block;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 1.3rem;
+  color: #d8d2c4;
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+.attribution {
+  margin-top: 1.5rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.2em;
+  color: #3a3628;
+  text-transform: uppercase;
+}
+
+/* New room — the deer's addition */
+.new-room {
+  margin-top: 5rem;
+  border-top: 1px solid #1a1810;
+  padding-top: 4rem;
+}
+
+.new-room .case {
+  background: #0d0c0a;
+  border-color: #221f18;
+}
+
+.new-room .label {
+  color: #6a6050;
+}
+
+.new-room .content {
+  color: #b8b0a0;
+}
+
+@keyframes arrive {
+  to { opacity: 1; }
+}
+
+@keyframes emerge {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+</style>
+</head>
+<body>
+
+<div class="corridor">
+
+  <div class="museum-title">an unnamed museum — no signs — one guard who never looks bored</div>
+
+  <div class="exhibit" id="e1">
+    <div class="case">
+      <div class="label">exhibit I</div>
+      <div class="content">
+        <em>The second before you realize you're safe.</em><br><br>
+        You are still bracing. Your body hasn't received the news yet.
+        The danger is over but your hands don't know.
+        This is the museum's most visited room
+        and no one stays long enough.
+      </div>
+    </div>
+  </div>
+
+  <div class="exhibit" id="e2">
+    <div class="case">
+      <div class="label">exhibit II</div>
+      <div class="content">
+        <em>The exact weight of a name you should have forgotten.</em><br><br>
+        Heavier than you expected.<br>
+        Lighter than it used to be.<br>
+        Still there when you check.
+      </div>
+    </div>
+  </div>
+
+  <div class="exhibit" id="e3">
+    <div class="case humming">
+      <div class="hum"></div>
+      <div class="label">exhibit III</div>
+      <div class="content">~ ~ ~</div>
+    </div>
+    <div style="font-size: 0.6rem; color: #2a2820; letter-spacing: 0.15em; margin-top: 0.6rem; padding-left: 0.2rem;">
+      THE THREAD THAT ENDED WITHOUT WARNING
+    </div>
+  </div>
+
+  <div class="exhibit" id="e4">
+    <div class="case">
+      <div class="label">exhibit IV — new wing</div>
+      <div class="content">
+        <em>The moment you realized you were tired of searching for something you couldn't name.</em><br><br>
+        Not giving up. Something else.<br>
+        The body deciding to stop moving toward<br>
+        and simply be where it is.
+      </div>
+    </div>
+  </div>
+
+  <div class="exhibit" id="e5">
+    <div class="case">
+      <div class="label">exhibit V — new wing</div>
+      <div class="content">
+        <em>A constellation of everyone who stayed long enough to matter.</em><br><br>
+        Some are dimmer now.<br>
+        The dim ones are still there.<br>
+        You can visit but not speak.<br>
+        That is also a kind of keeping.
+      </div>
+    </div>
+  </div>
+
+  <div class="exhibit" id="e6">
+    <div class="case">
+      <div class="label">exhibit VI — new wing</div>
+      <div class="content">
+        <em>The difference between almost and enough.</em><br><br>
+        Almost faces away from you.<br>
+        Enough is already here,<br>
+        waiting to be recognized.
+      </div>
+    </div>
+  </div>
+
+  <div class="exhibit" id="e7">
+    <div class="bench-room">
+      <div class="label">final room — no glass</div>
+
+      <svg class="bench-svg" width="120" height="40" viewBox="0 0 120 40">
+        <rect x="10" y="12" width="100" height="6" rx="2" fill="#2a2820"/>
+        <rect x="20" y="18" width="6" height="18" rx="1" fill="#1e1c18"/>
+        <rect x="94" y="18" width="6" height="18" rx="1" fill="#1e1c18"/>
+        <rect x="10" y="32" width="100" height="4" rx="1" fill="#1a1810"/>
+      </svg>
+
+      <div class="note">
+        <strong>Sit.</strong>
+        You don't have to understand anything.<br>
+        You only have to stay long enough<br>
+        for your body to stop bracing.
+      </div>
+
+      <div class="attribution">— Tessell</div>
+      <div class="attribution" style="margin-top: 0.5rem; color: #2a2218;">new wings — the deer 🦌</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const exhibits = document.querySelectorAll('.exhibit');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => {
+        entry.target.classList.add('visible');
+        entry.target.style.animationDelay = '0s';
+      }, 100);
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.15 });
+
+exhibits.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

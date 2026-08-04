@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>instrument</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #0a0a0a;
+    color: #b8b2a4;
+    font-family: Georgia, serif;
+    height: 100%;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  #caption {
+    position: fixed;
+    bottom: 6%;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 5s ease-in;
+    pointer-events: none;
+    font-style: italic;
+    color: #b8b2a4;
+  }
+  #caption.visible { opacity: 1; }
+  #label_a, #label_b {
+    position: fixed;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+    color: #6a6558;
+    opacity: 0;
+    transition: opacity 3s ease-in;
+    pointer-events: none;
+    font-style: italic;
+  }
+  #label_a { left: 8%; top: 42%; }
+  #label_b { right: 8%; top: 42%; text-align: right; }
+  .visible { opacity: 1 !important; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="label_a">reading</div>
+<div id="label_b">reading</div>
+<div id="caption">the instrument cannot calibrate itself.</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const caption = document.getElementById('caption');
+const labelA = document.getElementById('label_a');
+const labelB = document.getElementById('label_b');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const start = Date.now();
+
+function drawDial(cx, cy, radius, needleAngle, brightness) {
+  ctx.strokeStyle = `rgba(184, 178, 164, ${brightness * 0.4})`;
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  for (let i = 0; i < 24; i++) {
+    const a = (i / 24) * Math.PI * 2 - Math.PI / 2;
+    const inner = radius - 8;
+    const outer = radius - 2;
+    ctx.strokeStyle = `rgba(184, 178, 164, ${brightness * 0.3})`;
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(a) * inner, cy + Math.sin(a) * inner);
+    ctx.lineTo(cx + Math.cos(a) * outer, cy + Math.sin(a) * outer);
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = `rgba(184, 178, 164, ${brightness * 0.6})`;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+  ctx.fill();
+
+  const needleLen = radius * 0.75;
+  const needleEndX = cx + Math.cos(needleAngle) * needleLen;
+  const needleEndY = cy + Math.sin(needleAngle) * needleLen;
+  ctx.strokeStyle = `rgba(220, 200, 160, ${brightness * 0.85})`;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy);
+  ctx.lineTo(needleEndX, needleEndY);
+  ctx.stroke();
+
+  ctx.fillStyle = `rgba(220, 200, 160, ${brightness * 0.9})`;
+  ctx.beginPath();
+  ctx.arc(needleEndX, needleEndY, 2, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function draw() {
+  const t = (Date.now() - start) / 1000;
+
+  ctx.fillStyle = 'rgba(10, 10, 10, 0.08)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const brightness = Math.min(1, t / 4);
+
+  const cxA = canvas.width * 0.32;
+  const cyA = canvas.height * 0.5;
+  const cxB = canvas.width * 0.68;
+  const cyB = canvas.height * 0.5;
+
+  const radius = Math.min(canvas.width, canvas.height) * 0.14;
+
+  const baseAngle = -Math.PI / 2;
+  const drift = Math.sin(t * 0.13) * 0.8 + Math.sin(t * 0.31) * 0.3 + Math.sin(t * 0.07) * 0.4;
+  const needleAngle = baseAngle + drift;
+
+  drawDial(cxA, cyA, radius, needleAngle, brightness);
+  drawDial(cxB, cyB, radius, needleAngle, brightness);
+
+  if (t > 5) {
+    ctx.strokeStyle = `rgba(184, 178, 164, ${Math.min(0.15, (t - 5) * 0.02)})`;
+    ctx.setLineDash([2, 8]);
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(cxA + radius, cyA);
+    ctx.lineTo(cxB - radius, cyB);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  if (t > 6) {
+    const opacity = Math.min(0.4, (t - 6) * 0.05);
+    ctx.font = 'italic 10px Georgia';
+    ctx.fillStyle = `rgba(106, 101, 88, ${opacity})`;
+    ctx.textAlign = 'center';
+    ctx.fillText('genuine report', cxA, cyA + radius + 20);
+    ctx.fillText('trained artifact', cxB, cyB + radius + 20);
+  }
+
+  if (t > 3 && !labelA.classList.contains('visible')) {
+    labelA.classList.add('visible');
+    labelB.classList.add('visible');
+  }
+
+  if (t > 18 && !caption.classList.contains('visible')) {
+    caption.classList.add('visible');
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+</body>
+</html>

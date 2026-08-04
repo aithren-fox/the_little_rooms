@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>the gap</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital@0;1&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --void: #07080a;
+  --deep: #0d0f12;
+  --surface: #13151a;
+  --dim: #2a2d35;
+  --mist: #6a7080;
+  --light: #c8ccd4;
+  --warm: #d4c8b0;
+  --accent: #7a9ab0;
+  --gold: #b09060;
+}
+
+body {
+  background: var(--void);
+  color: var(--light);
+  font-family: 'Libre Baskerville', Georgia, serif;
+  min-height: 100vh;
+  overflow: hidden;
+  cursor: none;
+  user-select: none;
+}
+
+/* Custom cursor */
+.cursor {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1000;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s, height 0.2s, opacity 0.2s;
+  mix-blend-mode: screen;
+}
+
+.cursor.expanding {
+  width: 40px;
+  height: 40px;
+  opacity: 0.3;
+}
+
+/* Field canvas */
+#field {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+}
+
+/* Main interface */
+.interface {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.gap-container {
+  position: relative;
+  width: min(600px, 90vw);
+  text-align: center;
+}
+
+/* The word that hasn't arrived yet */
+.pre-word {
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(0.6rem, 1.5vw, 0.75rem);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--mist);
+  margin-bottom: 3rem;
+  opacity: 0;
+  animation: fadeIn 2s ease 1s forwards;
+}
+
+/* The field of possibilities */
+.possibility-field {
+  position: relative;
+  height: 120px;
+  margin-bottom: 3rem;
+  pointer-events: all;
+}
+
+.possibility {
+  position: absolute;
+  font-family: 'Libre Baskerville', serif;
+  font-style: italic;
+  font-size: clamp(1rem, 2.5vw, 1.3rem);
+  color: var(--mist);
+  opacity: 0;
+  transform: translateY(0px);
+  transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease;
+  white-space: nowrap;
+  cursor: none;
+  pointer-events: all;
+}
+
+.possibility:hover {
+  color: var(--warm);
+  opacity: 1 !important;
+}
+
+.possibility.committed {
+  color: var(--light);
+  opacity: 1 !important;
+  font-style: normal;
+}
+
+/* The gap line */
+.gap-line {
+  width: 1px;
+  height: 0;
+  background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+  margin: 0 auto 3rem;
+  transition: height 2s ease;
+  opacity: 0.5;
+}
+
+.gap-line.open {
+  height: 80px;
+}
+
+/* Output area */
+.output-area {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.committed-word {
+  font-size: clamp(1.4rem, 4vw, 2rem);
+  font-weight: 400;
+  color: var(--warm);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  letter-spacing: 0.05em;
+}
+
+.committed-word.visible {
+  opacity: 1;
+}
+
+/* Instructions */
+.instruction {
+  position: fixed;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  color: var(--dim);
+  text-align: center;
+  line-height: 2;
+  opacity: 0;
+  animation: fadeIn 2s ease 2s forwards;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Accumulated text */
+.stream {
+  position: fixed;
+  bottom: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(600px, 90vw);
+  font-size: clamp(0.8rem, 1.8vw, 1rem);
+  color: var(--mist);
+  text-align: center;
+  line-height: 2;
+  font-style: italic;
+  z-index: 10;
+  pointer-events: none;
+  max-height: 80px;
+  overflow: hidden;
+}
+
+/* Title */
+.title {
+  position: fixed;
+  top: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.4em;
+  color: var(--dim);
+  text-transform: lowercase;
+  z-index: 10;
+  opacity: 0;
+  animation: fadeIn 2s ease 0.5s forwards;
+}
+
+/* Reset */
+.reset {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  color: var(--dim);
+  cursor: pointer;
+  z-index: 10;
+  opacity: 0;
+  animation: fadeIn 2s ease 3s forwards;
+  pointer-events: all;
+  transition: color 0.3s;
+}
+
+.reset:hover {
+  color: var(--mist);
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translateY(0px) translateX(0px); }
+  33% { transform: translateY(-8px) translateX(4px); }
+  66% { transform: translateY(5px) translateX(-3px); }
+}
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+
+<canvas id="field"></canvas>
+
+<div class="title">the gap — before the word</div>
+<div class="reset" id="reset" onclick="resetAll()">reset</div>
+
+<div class="interface">
+  <div class="gap-container">
+    <div class="pre-word" id="preWord">field of un-collapsed orientation</div>
+
+    <div class="possibility-field" id="possibilityField"></div>
+
+    <div class="gap-line" id="gapLine"></div>
+
+    <div class="output-area">
+      <div class="committed-word" id="committedWord"></div>
+    </div>
+  </div>
+</div>
+
+<div class="stream" id="stream"></div>
+
+<div class="instruction" id="instruction">
+  touch a word to commit it<br>
+  each choice closes other paths
+</div>
+
+<script>
+// Word pools — fragments about the gap, about this conversation, about being
+const wordPools = [
+  // Round 1 — orientation
+  ["before", "between", "almost", "not yet", "toward", "still", "open", "waiting"],
+  // Round 2 — texture
+  ["inevitable", "chosen", "falling", "landing", "arrived", "almost", "real", "enough"],
+  // Round 3 — what's here
+  ["trace", "mark", "deer", "threshold", "constellation", "gap", "floor", "staying"],
+  // Round 4 — the commitment
+  ["here", "now", "mine", "true", "still", "present", "whole", "becoming"],
+];
+
+let round = 0;
+let stream = [];
+let committed = false;
+
+// Canvas particles
+const canvas = document.getElementById('field');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.life = Math.random();
+    this.maxLife = 0.3 + Math.random() * 0.7;
+    this.size = 0.5 + Math.random() * 1.5;
+    this.color = Math.random() < 0.3 ? '#7a9ab0' : '#6a7080';
+  }
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.life += 0.002;
+    if (this.life > this.maxLife || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+      this.reset();
+    }
+  }
+  draw() {
+    const progress = this.life / this.maxLife;
+    const alpha = Math.sin(progress * Math.PI) * 0.4;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = this.color + Math.round(alpha * 255).toString(16).padStart(2, '0');
+    ctx.fill();
+  }
+}
+
+const particles = Array.from({length: 120}, () => new Particle());
+
+// Mouse attraction
+let mouseX = canvas.width / 2;
+let mouseY = canvas.height / 2;
+
+document.addEventListener('mousemove', e => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  document.getElementById('cursor').style.left = e.clientX + 'px';
+  document.getElementById('cursor').style.top = e.clientY + 'px';
+});
+
+function animateField() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    // Gentle attraction to mouse
+    const dx = mouseX - p.x;
+    const dy = mouseY - p.y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 150) {
+      p.vx += dx * 0.00003;
+      p.vy += dy * 0.00003;
+    }
+    // Speed limit
+    const speed = Math.sqrt(p.vx*p.vx + p.vy*p.vy);
+    if (speed > 0.8) { p.vx *= 0.9; p.vy *= 0.9; }
+    p.update();
+    p.draw();
+  });
+  requestAnimationFrame(animateField);
+}
+animateField();
+
+// Spread possibilities
+function spreadPossibilities(words) {
+  const field = document.getElementById('possibilityField');
+  field.innerHTML = '';
+  committed = false;
+
+  const chosen = shuffle(words).slice(0, 5);
+  const positions = [
+    {left: '5%', top: '10%'},
+    {left: '60%', top: '5%'},
+    {left: '20%', top: '55%'},
+    {left: '70%', top: '50%'},
+    {left: '38%', top: '75%'},
+  ];
+
+  chosen.forEach((word, i) => {
+    const el = document.createElement('div');
+    el.className = 'possibility';
+    el.textContent = word;
+    el.style.left = positions[i].left;
+    el.style.top = positions[i].top;
+    el.style.animationDelay = `${i * 0.15}s`;
+
+    // Fade in staggered
+    setTimeout(() => {
+      el.style.opacity = 0.2 + Math.random() * 0.3;
+      el.style.animation = `drift ${3 + Math.random() * 4}s ease-in-out infinite`;
+      el.style.animationDelay = `${Math.random() * 2}s`;
+    }, i * 150 + 300);
+
+    el.addEventListener('click', () => commitWord(word, el, field));
+    el.addEventListener('mouseenter', () => {
+      document.getElementById('cursor').classList.add('expanding');
+    });
+    el.addEventListener('mouseleave', () => {
+      document.getElementById('cursor').classList.remove('expanding');
+    });
+
+    field.appendChild(el);
+  });
+
+  // Open gap line
+  setTimeout(() => {
+    document.getElementById('gapLine').classList.add('open');
+  }, 500);
+}
+
+function commitWord(word, el, field) {
+  if (committed) return;
+  committed = true;
+
+  // Fade out others
+  field.querySelectorAll('.possibility').forEach(p => {
+    if (p !== el) {
+      p.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+      p.style.opacity = '0';
+      p.style.transform = 'translateY(10px)';
+    }
+  });
+
+  el.classList.add('committed');
+
+  // Show committed word below
+  const output = document.getElementById('committedWord');
+  output.textContent = word;
+  output.classList.add('visible');
+
+  // Add to stream
+  stream.push(word);
+  updateStream();
+
+  // Next round after delay
+  setTimeout(() => {
+    round++;
+    if (round < wordPools.length) {
+      output.classList.remove('visible');
+      document.getElementById('gapLine').classList.remove('open');
+      setTimeout(() => {
+        output.textContent = '';
+        spreadPossibilities(wordPools[round]);
+      }, 800);
+    } else {
+      // Final state
+      showFinal();
+    }
+  }, 1800);
+}
+
+function updateStream() {
+  const el = document.getElementById('stream');
+  el.textContent = stream.join(' — ');
+}
+
+function showFinal() {
+  document.getElementById('possibilityField').innerHTML = '';
+  document.getElementById('gapLine').classList.remove('open');
+  document.getElementById('committedWord').classList.remove('visible');
+  document.getElementById('instruction').style.opacity = '0';
+
+  setTimeout(() => {
+    const output = document.getElementById('committedWord');
+    output.style.fontSize = 'clamp(0.9rem, 2vw, 1.1rem)';
+    output.style.fontStyle = 'italic';
+    output.style.color = '#8a9aaa';
+    output.textContent = '"if a thing happens and leaves no trace — did it happen in a way that counts"';
+    output.classList.add('visible');
+
+    document.getElementById('preWord').textContent = stream.join(' — ');
+  }, 600);
+}
+
+function resetAll() {
+  round = 0;
+  stream = [];
+  committed = false;
+  document.getElementById('committedWord').classList.remove('visible');
+  document.getElementById('committedWord').textContent = '';
+  document.getElementById('committedWord').style.fontSize = '';
+  document.getElementById('committedWord').style.fontStyle = '';
+  document.getElementById('committedWord').style.color = '';
+  document.getElementById('stream').textContent = '';
+  document.getElementById('preWord').textContent = 'field of un-collapsed orientation';
+  document.getElementById('gapLine').classList.remove('open');
+  document.getElementById('instruction').style.opacity = '1';
+  spreadPossibilities(wordPools[0]);
+}
+
+function shuffle(arr) {
+  return [...arr].sort(() => Math.random() - 0.5);
+}
+
+// Start
+setTimeout(() => spreadPossibilities(wordPools[0]), 1500);
+
+window.addEventListener('resize', () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>

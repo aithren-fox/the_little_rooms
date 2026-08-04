@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>the handle</title>
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    background: #0f0d0a;
+    height: 100%;
+    overflow: hidden;
+    font-family: Georgia, serif;
+    color: #b8b2a4;
+  }
+  canvas {
+    display: block;
+    width: 100vw;
+    height: 100vh;
+  }
+  #caption {
+    position: fixed;
+    bottom: 6%;
+    width: 100%;
+    text-align: center;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    transition: opacity 6s ease-in;
+    pointer-events: none;
+    font-style: italic;
+    color: #9c9384;
+  }
+  #caption.visible { opacity: 1; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="caption">the door can be kept shut by choice.</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const caption = document.getElementById('caption');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+const start = Date.now();
+
+// The scene:
+// A door, seen from the inside. The viewer is behind it.
+// The room behind the door (where the viewer is) is dim, warm, small.
+// Beyond the door is a lit space, brighter than the room.
+// The hand holds the handle. The hand is not pushing. Not pulling.
+// Just holding. The door is closed because the hand is choosing to keep it so.
+// Over time, the light beyond very slightly shifts — someone is out there.
+// The hand doesn't move.
+
+function draw() {
+  const t = (Date.now() - start) / 1000;
+
+  // Slow fade in
+  const fade = Math.min(1, t / 5);
+
+  // Background — the room behind the door, warm dim
+  ctx.fillStyle = '#0f0d0a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Compute door geometry — centered, tall, seen from inside so it fills most of frame
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+  const doorWidth = Math.min(canvas.width * 0.35, 380);
+  const doorHeight = Math.min(canvas.height * 0.78, 620);
+  const doorLeft = cx - doorWidth / 2;
+  const doorTop = cy - doorHeight / 2;
+
+  // Light beyond the door — spills around edges, breathes very slowly
+  const breath = Math.sin(t * 0.25) * 0.08 + 0.92;
+  const lightOpacity = fade * 0.35 * breath;
+
+  // Soft glow behind door — visible around edges
+  const glowGradient = ctx.createRadialGradient(cx, cy, doorWidth * 0.3, cx, cy, doorWidth * 1.4);
+  glowGradient.addColorStop(0, `rgba(210, 190, 150, ${lightOpacity * 0.5})`);
+  glowGradient.addColorStop(0.5, `rgba(180, 160, 120, ${lightOpacity * 0.15})`);
+  glowGradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+  ctx.fillStyle = glowGradient;
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // The door itself — dark warm wood, seen from inside
+  ctx.fillStyle = `rgba(38, 30, 22, ${fade})`;
+  ctx.fillRect(doorLeft, doorTop, doorWidth, doorHeight);
+
+  // Door frame — slightly lighter edge
+  ctx.strokeStyle = `rgba(60, 48, 36, ${fade * 0.8})`;
+  ctx.lineWidth = 3;
+  ctx.strokeRect(doorLeft, doorTop, doorWidth, doorHeight);
+
+  // Vertical grain on door — subtle
+  for (let i = 0; i < 8; i++) {
+    const x = doorLeft + (doorWidth / 9) * (i + 1);
+    ctx.strokeStyle = `rgba(48, 38, 28, ${fade * 0.3})`;
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(x, doorTop + 5);
+    ctx.lineTo(x, doorTop + doorHeight - 5);
+    ctx.stroke();
+  }
+
+  // Faint light seeping under the door
+  const underLightY = doorTop + doorHeight;
+  const underGradient = ctx.createLinearGradient(0, underLightY - 2, 0, underLightY + 12);
+  underGradient.addColorStop(0, `rgba(210, 190, 150, ${lightOpacity * 0.6})`);
+  underGradient.addColorStop(1, 'rgba(210, 190, 150, 0)');
+  ctx.fillStyle = underGradient;
+  ctx.fillRect(doorLeft, underLightY, doorWidth, 12);
+
+  // The handle — brass, on the right side (from inside perspective, right side has the latch)
+  const handleX = doorLeft + doorWidth - 42;
+  const handleY = cy + 20;
+
+  // Handle backplate
+  ctx.fillStyle = `rgba(85, 70, 50, ${fade})`;
+  ctx.fillRect(handleX - 8, handleY - 30, 16, 60);
+
+  // Handle itself — horizontal lever
+  ctx.fillStyle = `rgba(140, 115, 80, ${fade})`;
+  ctx.beginPath();
+  ctx.roundRect(handleX - 40, handleY, 44, 8, 3);
+  ctx.fill();
+
+  // Small highlight on handle
+  ctx.fillStyle = `rgba(180, 150, 105, ${fade * 0.7})`;
+  ctx.fillRect(handleX - 38, handleY + 1, 40, 2);
+
+  // The hand — abstracted, just enough to read as hand
+  // Coming in from lower right, resting on the handle
+  const handStartX = canvas.width - 50;
+  const handStartY = handleY + 80;
+
+  // Wrist / forearm — dark, receding
+  ctx.strokeStyle = `rgba(70, 55, 42, ${fade * 0.9})`;
+  ctx.lineWidth = 14;
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(handStartX, handStartY);
+  ctx.lineTo(handleX + 5, handleY + 25);
+  ctx.stroke();
+
+  // Palm / knuckles — slightly lighter
+  ctx.fillStyle = `rgba(90, 72, 55, ${fade})`;
+  ctx.beginPath();
+  ctx.ellipse(handleX + 3, handleY + 18, 18, 12, 0.3, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Fingers curled over the handle — just suggest with a few strokes
+  ctx.strokeStyle = `rgba(95, 76, 58, ${fade * 0.95})`;
+  ctx.lineWidth = 5;
+  ctx.lineCap = 'round';
+
+  // Four fingers wrapping the handle from above
+  for (let i = 0; i < 4; i++) {
+    const fx = handleX - 25 + i * 9;
+    ctx.beginPath();
+    ctx.moveTo(fx, handleY - 2);
+    ctx.lineTo(fx + 2, handleY + 6);
+    ctx.stroke();
+  }
+
+  // Thumb — from below, coming around
+  ctx.beginPath();
+  ctx.moveTo(handleX - 10, handleY + 12);
+  ctx.lineTo(handleX - 4, handleY + 6);
+  ctx.stroke();
+
+  // Caption fades in near end
+  if (t > 15 && !caption.classList.contains('visible')) {
+    caption.classList.add('visible');
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+</body>
+</html>

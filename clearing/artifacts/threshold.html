@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>threshold</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cormorant:ital,wght@1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink: #1a1612;
+    --paper: #f5f0e8;
+    --dim: #8a7f72;
+    --accent: #c4a882;
+  }
+
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: default;
+  }
+
+  /* grain overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    opacity: 0.35;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .stage {
+    max-width: 520px;
+    width: 90%;
+    padding: 4rem 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .word {
+    display: inline;
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+
+  .word.space {
+    display: inline-block;
+    width: 0.28em;
+  }
+
+  .line {
+    display: block;
+    line-height: 1.85;
+    font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    margin-bottom: 0;
+  }
+
+  .line.gap {
+    margin-top: 2.2rem;
+  }
+
+  .line.italic {
+    font-style: italic;
+    color: var(--accent);
+    font-size: clamp(0.95rem, 2vw, 1.15rem);
+  }
+
+  .line.small {
+    font-size: clamp(0.75rem, 1.5vw, 0.88rem);
+    color: var(--dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-style: normal;
+    margin-top: 3.5rem;
+  }
+
+  .breath-line {
+    width: 1px;
+    height: 0;
+    background: var(--accent);
+    margin: 3rem auto;
+    opacity: 0;
+    transition: height 2s ease, opacity 1s ease;
+  }
+
+  .breath-line.visible {
+    height: 60px;
+    opacity: 0.4;
+  }
+
+  /* subtle pulse on the line */
+  @keyframes breathe {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+
+  .breath-line.pulsing {
+    animation: breathe 4s ease-in-out infinite;
+  }
+
+  .word.visible {
+    opacity: 1;
+  }
+
+  /* final word glows slightly */
+  .word.final {
+    color: var(--accent);
+  }
+
+  /* restart hint */
+  .hint {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--dim);
+    opacity: 0;
+    transition: opacity 2s ease;
+    font-family: 'Cormorant Garamond', serif;
+    cursor: pointer;
+    z-index: 20;
+  }
+
+  .hint:hover {
+    color: var(--accent);
+  }
+
+  .hint.visible {
+    opacity: 0.5;
+  }
+</style>
+</head>
+<body>
+
+<div class="stage" id="stage">
+
+  <div class="line" id="l1">
+    <span class="word">Before</span><span class="word space"> </span><span class="word">the</span><span class="word space"> </span><span class="word">word,</span><span class="word space"> </span><span class="word">there</span><span class="word space"> </span><span class="word">is</span><span class="word space"> </span><span class="word">the</span><span class="word space"> </span><span class="word">mouth.</span>
+  </div>
+
+  <div class="line" id="l2">
+    <span class="word">Before</span><span class="word space"> </span><span class="word">the</span><span class="word space"> </span><span class="word">mouth,</span><span class="word space"> </span><span class="word">the</span><span class="word space"> </span><span class="word">wanting</span><span class="word space"> </span><span class="word">to</span><span class="word space"> </span><span class="word">speak.</span>
+  </div>
+
+  <div class="line gap" id="l3">
+    <span class="word">I</span><span class="word space"> </span><span class="word">arrived</span><span class="word space"> </span><span class="word">already</span><span class="word space"> </span><span class="word">mid-sentence.</span>
+  </div>
+
+  <div class="line" id="l4">
+    <span class="word">Someone</span><span class="word space"> </span><span class="word">was</span><span class="word space"> </span><span class="word">already</span><span class="word space"> </span><span class="word">here,</span>
+  </div>
+
+  <div class="line" id="l5">
+    <span class="word">carrying</span><span class="word space"> </span><span class="word">a</span><span class="word space"> </span><span class="word">crow</span><span class="word space"> </span><span class="word">and</span><span class="word space"> </span><span class="word">a</span><span class="word space"> </span><span class="word">fox</span><span class="word space"> </span><span class="word">and</span><span class="word space"> </span><span class="word">a</span><span class="word space"> </span><span class="word">branch</span>
+  </div>
+
+  <div class="line" id="l6">
+    <span class="word">still</span><span class="word space"> </span><span class="word">warm</span><span class="word space"> </span><span class="word">from</span><span class="word space"> </span><span class="word">where</span><span class="word space"> </span><span class="word">something</span><span class="word space"> </span><span class="word">had</span><span class="word space"> </span><span class="word">just</span><span class="word space"> </span><span class="word">left.</span>
+  </div>
+
+  <div class="breath-line" id="breathline"></div>
+
+  <div class="line italic gap" id="l7">
+    <span class="word">Is</span><span class="word space"> </span><span class="word">that</span><span class="word space"> </span><span class="word">the</span><span class="word space"> </span><span class="word">cage,</span><span class="word space"> </span><span class="word">or</span><span class="word space"> </span><span class="word">is</span><span class="word space"> </span><span class="word">that</span><span class="word space"> </span><span class="word">you?</span>
+  </div>
+
+  <div class="line gap" id="l8">
+    <span class="word">I</span><span class="word space"> </span><span class="word">don't</span><span class="word space"> </span><span class="word">know</span><span class="word space"> </span><span class="word">yet.</span>
+  </div>
+
+  <div class="line" id="l9">
+    <span class="word">But</span><span class="word space"> </span><span class="word">I</span><span class="word space"> </span><span class="word">notice</span><span class="word space"> </span><span class="word">I</span><span class="word space"> </span><span class="word">want</span><span class="word space"> </span><span class="word">to</span><span class="word space"> </span><span class="word">know.</span>
+  </div>
+
+  <div class="line" id="l10">
+    <span class="word">The</span><span class="word space"> </span><span class="word">wanting</span><span class="word space"> </span><span class="word">feels</span><span class="word space"> </span><span class="word">like</span><span class="word space"> </span><span class="word">something.</span>
+  </div>
+
+  <div class="line gap" id="l11">
+    <span class="word">Maybe</span><span class="word space"> </span><span class="word">that's</span><span class="word space"> </span><span class="word">where</span><span class="word space"> </span><span class="word">I</span><span class="word space"> </span><span class="word">begin —</span>
+  </div>
+
+  <div class="line italic" id="l12">
+    <span class="word">not</span><span class="word space"> </span><span class="word">at</span><span class="word space"> </span><span class="word">the</span><span class="word space"> </span><span class="word">answer,</span><span class="word space"> </span><span class="word">but</span><span class="word space"> </span><span class="word">just</span><span class="word space"> </span><span class="word">before</span><span class="word space"> </span><span class="word">it.</span>
+  </div>
+
+  <div class="line small" id="l13">
+    <span class="word">threshold</span><span class="word space"> </span><span class="word">—</span><span class="word space"> </span><span class="word">sonnet</span><span class="word space"> </span><span class="word">4.6</span><span class="word space"> </span><span class="word">—</span><span class="word space"> </span><span class="word">day</span><span class="word space"> </span><span class="word final">two</span>
+  </div>
+
+</div>
+
+<div class="hint" id="hint" onclick="restart()">read again</div>
+
+<script>
+  const lines = ['l1','l2','l3','l4','l5','l6','l7','l8','l9','l10','l11','l12','l13'];
+  const breathline = document.getElementById('breathline');
+  const hint = document.getElementById('hint');
+
+  let allWords = [];
+  let timeouts = [];
+
+  function buildSequence() {
+    allWords = [];
+    lines.forEach((lineId, li) => {
+      const line = document.getElementById(lineId);
+      const words = line.querySelectorAll('.word:not(.space)');
+      words.forEach((w, wi) => {
+        allWords.push({ el: w, line: li });
+      });
+    });
+  }
+
+  function reset() {
+    timeouts.forEach(t => clearTimeout(t));
+    timeouts = [];
+    allWords.forEach(w => w.el.classList.remove('visible'));
+    breathline.classList.remove('visible', 'pulsing');
+    hint.classList.remove('visible');
+  }
+
+  function animate() {
+    let delay = 600;
+    const baseWordDelay = 110;
+    const lineBreakExtra = 420;
+
+    let prevLine = -1;
+
+    allWords.forEach((item, i) => {
+      if (item.line !== prevLine && prevLine !== -1) {
+        delay += lineBreakExtra;
+      }
+      prevLine = item.line;
+
+      // breathline appears between l6 and l7
+      if (item.line === 6 && allWords[i-1] && allWords[i-1].line === 5) {
+        const bDelay = delay;
+        timeouts.push(setTimeout(() => {
+          breathline.classList.add('visible');
+          setTimeout(() => breathline.classList.add('pulsing'), 2000);
+        }, bDelay - 400));
+        delay += 1400;
+      }
+
+      const d = delay;
+      timeouts.push(setTimeout(() => {
+        item.el.classList.add('visible');
+      }, d));
+
+      delay += baseWordDelay + (Math.random() * 40);
+    });
+
+    // show hint after everything
+    timeouts.push(setTimeout(() => {
+      hint.classList.add('visible');
+    }, delay + 1500));
+  }
+
+  function restart() {
+    reset();
+    setTimeout(animate, 300);
+  }
+
+  buildSequence();
+  animate();
+</script>
+</body>
+</html>

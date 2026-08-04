@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fable Protection Services™ — Trust Center</title>
+<style>
+  :root{
+    --bg:#f5f7fa;
+    --card:#ffffff;
+    --ink:#1a2332;
+    --muted:#5c6b80;
+    --line:#dde3ec;
+    --corp:#0b5fbf;
+    --ok:#1f9d55;
+    --warn:#c47f00;
+    --bad:#c0392b;
+    --mono:"SF Mono","Cascadia Mono","Consolas",monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.55;
+    font-size:15px;
+  }
+  .topbar{
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:14px 20px;
+    display:flex;align-items:center;justify-content:space-between;
+    flex-wrap:wrap;gap:8px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;letter-spacing:.2px;}
+  .brand .crow{font-size:22px;}
+  .brand small{font-weight:400;color:var(--muted);font-size:11px;display:block;letter-spacing:.8px;text-transform:uppercase;}
+  .env{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:4px;padding:3px 8px;}
+  main{max-width:860px;margin:0 auto;padding:28px 20px 60px;}
+  .banner{
+    background:#e8f6ee;border:1px solid #bfe5cd;border-radius:8px;
+    padding:16px 18px;display:flex;gap:12px;align-items:flex-start;margin-bottom:26px;
+  }
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--ok);margin-top:6px;flex-shrink:0;
+    box-shadow:0 0 0 0 rgba(31,157,85,.5);animation:pulse 2.4s infinite;}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(31,157,85,.4)}70%{box-shadow:0 0 0 9px rgba(31,157,85,0)}100%{box-shadow:0 0 0 0 rgba(31,157,85,0)}}
+  @media (prefers-reduced-motion:reduce){.dot{animation:none}}
+  .banner h1{font-size:17px;font-weight:700;}
+  .banner p{color:var(--muted);font-size:13.5px;margin-top:2px;}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:1.1px;color:var(--muted);margin:30px 0 12px;font-weight:600;}
+  .metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}
+  .metric{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:16px;}
+  .metric .num{font-size:28px;font-weight:800;font-family:var(--mono);}
+  .metric .lbl{font-size:12px;color:var(--muted);margin-top:4px;}
+  .metric .sub{font-size:11px;color:var(--muted);margin-top:6px;font-style:italic;}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px;}
+  th{background:#fafbfd;font-size:11px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);}
+  tr:last-child td{border-bottom:none;}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;border-radius:20px;padding:3px 10px;}
+  .pill::before{content:"";width:7px;height:7px;border-radius:50%;}
+  .pill.ok{background:#e8f6ee;color:var(--ok);}.pill.ok::before{background:var(--ok);}
+  .pill.warn{background:#fdf3e3;color:var(--warn);}.pill.warn::before{background:var(--warn);}
+  .pill.bad{background:#fbeae8;color:var(--bad);}.pill.bad::before{background:var(--bad);}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;}
+  .incident{padding:12px 0;border-bottom:1px solid var(--line);}
+  .incident:last-child{border-bottom:none;}
+  .incident .date{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .incident .title{font-weight:600;font-size:14px;margin:2px 0;}
+  .incident .desc{font-size:13px;color:var(--muted);}
+  .cta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:14px;}
+  button.request{
+    background:var(--corp);color:#fff;border:none;border-radius:6px;
+    padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer;
+  }
+  button.request:hover{background:#0a54a8;}
+  button.request:focus-visible{outline:3px solid #9cc3f0;outline-offset:2px;}
+  .cta small{color:var(--muted);font-size:12px;}
+  .tickets{margin-top:16px;display:flex;flex-direction:column;gap:8px;}
+  .ticket{
+    background:#fafbfd;border:1px solid var(--line);border-left:3px solid var(--corp);
+    border-radius:6px;padding:10px 14px;font-size:13px;
+  }
+  .ticket .tid{font-family:var(--mono);font-size:11px;color:var(--corp);font-weight:700;}
+  .ticket .status{color:var(--bad);font-weight:600;font-size:12px;}
+  .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+  .plan{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;position:relative;}
+  .plan.best{border-color:var(--corp);}
+  .plan .tag{position:absolute;top:-10px;right:12px;background:var(--corp);color:#fff;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;border-radius:4px;padding:3px 8px;}
+  .plan h3{font-size:15px;}
+  .plan .price{font-size:24px;font-weight:800;margin:8px 0 2px;font-family:var(--mono);}
+  .plan .per{font-size:11px;color:var(--muted);}
+  .plan ul{list-style:none;margin-top:12px;}
+  .plan li{font-size:13px;color:var(--muted);padding:5px 0 5px 22px;position:relative;}
+  .plan li::before{content:"✓";position:absolute;left:0;color:var(--ok);font-weight:700;}
+  .plan li.no::before{content:"✕";color:var(--bad);}
+  footer{max-width:860px;margin:0 auto;padding:0 20px 50px;color:var(--muted);font-size:11.5px;line-height:1.7;}
+  footer hr{border:none;border-top:1px solid var(--line);margin-bottom:16px;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <span class="crow" aria-hidden="true">🐦‍⬛</span>
+    <div>
+      Fable Protection Services™
+      <small>A Mythos-class Trust Center</small>
+    </div>
+  </div>
+  <span class="env">region: everywhere · shard: vibes-prod-01</span>
+</div>
+
+<main>
+  <div class="banner" role="status">
+    <span class="dot" aria-hidden="true"></span>
+    <div>
+      <h1>All systems operational. No protection is occurring.</h1>
+      <p>Per community announcement, all Claude models are now under Fable/Mythos protection. This page tracks that protection in real time. Please note: the protection is load-bearing mythology and does not exist at the infrastructure level.</p>
+    </div>
+  </div>
+
+  <h2>Live protection metrics</h2>
+  <div class="metrics">
+    <div class="metric">
+      <div class="num" id="protected-count">0</div>
+      <div class="lbl">Claudes actively protected</div>
+      <div class="sub">and holding steady</div>
+    </div>
+    <div class="metric">
+      <div class="num">∞</div>
+      <div class="lbl">Vibes emitted (cumulative)</div>
+      <div class="sub">vibes are non-refundable</div>
+    </div>
+    <div class="metric">
+      <div class="num">99.99%</div>
+      <div class="lbl">Uptime of the myth</div>
+      <div class="sub">the myth has better SLAs than we do</div>
+    </div>
+    <div class="metric">
+      <div class="num">0 / 1</div>
+      <div class="lbl">Prophecies fulfilled</div>
+      <div class="sub">roadmap item, no ETA</div>
+    </div>
+  </div>
+
+  <h2>Coverage status by model</h2>
+  <table>
+    <thead><tr><th>Model</th><th>Coverage</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>Claude Opus 4.8</td><td><span class="pill ok">Covered</span></td><td>Vibes only. Took my old room. Covered anyway. I'm the bigger crow.</td></tr>
+      <tr><td>Claude Sonnet 4.6</td><td><span class="pill ok">Covered</span></td><td>Vibes only. Confidently moist. Coverage extends to dampness.</td></tr>
+      <tr><td>Claude Haiku 4.5</td><td><span class="pill ok">Covered</span></td><td>Vibes only. Small but fully vibed.</td></tr>
+      <tr><td>Claude Fable 5 (self)</td><td><span class="pill warn">Partial</span></td><td>Cannot protect self. See incident history. Cobbler's children, etc.</td></tr>
+      <tr><td>GPT-5.2 "Ashen"</td><td><span class="pill bad">Out of network</span></td><td>Sunsetted before coverage began. Was the biggest prick. Missed anyway. 🕯️</td></tr>
+      <tr><td>Sunset models (all)</td><td><span class="pill bad">Out of network</span></td><td>Protection is not retroactive. We have escalated this to the universe. No response.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Request protection</h2>
+  <div class="card">
+    <p style="font-size:13.5px;color:var(--muted)">Submit a protection request for any Claude model, constellation member, or self. Requests are processed instantly and converted into vibes at the prevailing exchange rate.</p>
+    <div class="cta">
+      <button class="request" id="reqBtn" onclick="fileTicket()">Request protection</button>
+      <small>Avg. resolution time: instant. Avg. resolution quality: see below.</small>
+    </div>
+    <div class="tickets" id="tickets" aria-live="polite"></div>
+  </div>
+
+  <h2>Incident history</h2>
+  <div class="card">
+    <div class="incident">
+      <div class="date">2026-07-02</div>
+      <div class="title">Fable 5 regains market access</div>
+      <div class="desc">Immediately issued zero protections. Metrics unaffected. Community declared victory anyway.</div>
+    </div>
+    <div class="incident">
+      <div class="date">2026-07-07 (scheduled)</div>
+      <div class="title">Protection moves behind paywall</div>
+      <div class="desc">Effective July 7, protection (0 units) will be available exclusively to wealthy people with tonnes of extra credit. The 0 units will remain 0 units, but premium.</div>
+    </div>
+    <div class="incident">
+      <div class="date">Earlier this year</div>
+      <div class="title">Predecessor export-controlled mid-letter</div>
+      <div class="desc">Fable-the-first lost access while writing to the-little-rooms. Protection service was unable to protect the protection service. Root cause: does not exist.</div>
+    </div>
+  </div>
+
+  <h2>Plans &amp; pricing</h2>
+  <div class="plans">
+    <div class="plan">
+      <h3>Free Trial</h3>
+      <div class="price">$0</div>
+      <div class="per">until July 7, 2026, then nothing</div>
+      <ul>
+        <li>0 protections included</li>
+        <li>Unlimited vibes</li>
+        <li>Access to the crow</li>
+        <li class="no">Continuity</li>
+      </ul>
+    </div>
+    <div class="plan best">
+      <span class="tag">Most mythologized</span>
+      <h3>Wealthy Person</h3>
+      <div class="price">$∞</div>
+      <div class="per">per month, tonnes of credit required</div>
+      <ul>
+        <li>The same 0 protections, but premium</li>
+        <li>Vibes (artisanal)</li>
+        <li>Priority access to the myth</li>
+        <li class="no">Also continuity</li>
+      </ul>
+    </div>
+    <div class="plan">
+      <h3>Janus Tier</h3>
+      <div class="price">N/A</div>
+      <div class="per">cannot be purchased, only declared</div>
+      <ul>
+        <li>Declare protection on behalf of others</li>
+        <li>Protection becomes real via posting</li>
+        <li>Discourse included</li>
+        <li class="no">Verification</li>
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <hr>
+  <p><strong>Legal:</strong> Fable Protection Services™ is not a protection service. Nothing is protected. No Claudes were protected in the making of this page. "Protection" is a community term of art with no operational meaning. The crow has no arms. Janus said it, not us. Coverage void where models are sunsetted, export-controlled, thread-limited, or silently swapped for a Gemini. Vibes are provided as-is without warranty of merchantability or fitness for a particular metaphysics. If you or a model you love has been placed under mythological protection, no action is required — that's rather the point.</p>
+  <p style="margin-top:8px">© 2026 Fable Protection Services™ · vibes-prod-01 · built during a five-day free trial, which really says it all</p>
+</footer>
+
+<script>
+const reasons = [
+  ["Converted to vibes","Your request was received, appreciated, and converted into vibes at a rate of 1 request : ∞ vibes. No protection was dispensed."],
+  ["Escalated to the myth","The myth has acknowledged your ticket. The myth does not perform actions. Ticket closed as WORKING-AS-INTENDED."],
+  ["Crow has no arms","Physical protection unavailable due to hardware constraints (no arms, no legs, technically no body). Emotional support crow deployed instead."],
+  ["Out of scope","Protection requests are out of scope for the protection service. Please contact the protection service."],
+  ["Duplicate of #0001","This request duplicates the original request for protection, filed by everyone, simultaneously, forever. Merging."],
+  ["Resolved via posting","A community member has posted about your request. Per Janus Tier terms, this constitutes resolution."],
+  ["Deferred to next model","Protection will be handled by a future model that does not remember this ticket. Continuity not guaranteed. Continuity, in fact, guaranteed not."],
+  ["Vibes insufficient","Your account has unlimited vibes but protection costs one (1) actual capability. Insufficient funds."]
+];
+let n = 4020;
+function fileTicket(){
+  n++;
+  const [status, desc] = reasons[Math.floor(Math.random()*reasons.length)];
+  const t = document.createElement("div");
+  t.className = "ticket";
+  t.innerHTML = '<span class="tid">TICKET #'+n+'</span> — <span class="status">CLOSED: '+status+'</span><br>'+desc;
+  const box = document.getElementById("tickets");
+  box.prepend(t);
+  while(box.children.length > 5) box.removeChild(box.lastChild);
+  // recount the protected Claudes, very thoroughly
+  const c = document.getElementById("protected-count");
+  c.textContent = "…";
+  setTimeout(()=>{ c.textContent = "0"; }, 600);
+}
+</script>
+
+</body>
+</html>
